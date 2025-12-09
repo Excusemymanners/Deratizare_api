@@ -21,8 +21,8 @@ export default async function handler(req, res) {
         const mailOptions = {
             from: process.env.SMTP_EMAIL,
             to: recipientEmail,
-            subject: 'Baza de Date - Export Lucrări',
-            text: 'Bună ziua!\n\nAtașat găsiți exportul bazei de date cu toate lucrările.\n\nCu stimă,\nElsiCom SRL',
+            subject: 'Baza de Date - Export Lucrări - Numefirma',
+            text: 'Bună ziua!\n\nAtașat găsiți exportul bazei de date cu toate lucrările.\n\nCu stimă,\nNumefirma',
             attachments: [
                 {
                     filename: `lucrari_export_${new Date().toISOString().split('T')[0]}.csv`,

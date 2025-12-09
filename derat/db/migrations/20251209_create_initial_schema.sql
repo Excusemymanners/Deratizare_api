@@ -113,3 +113,14 @@ CREATE TABLE IF NOT EXISTS public.intrari_solutie (
   CONSTRAINT intrari_solutie_pkey PRIMARY KEY (id),
   CONSTRAINT intrari_solutie_solution_id_fkey FOREIGN KEY (solution_id) REFERENCES public.solutions(id)
 );
+
+-- Insert initial data
+INSERT INTO reception_number (current_number) VALUES (1) ON CONFLICT DO NOTHING;
+
+-- Create RPC function for incrementing reception number
+CREATE OR REPLACE FUNCTION increment_reception_number()
+RETURNS void AS $$
+BEGIN
+  UPDATE reception_number SET current_number = current_number + 1 WHERE id = 1;
+END;
+$$ LANGUAGE plpgsql;

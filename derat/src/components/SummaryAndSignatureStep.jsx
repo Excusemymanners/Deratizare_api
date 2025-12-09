@@ -234,13 +234,19 @@ const SummaryAndSignatureStep = () => {
       }
 
       // Persist verbal process now that email was sent and no duplicates detected
-      await addVerbalProcess(verbalProcess);
+      // Fetch the latest reception number again to ensure it's current
+      const latestReceptionNumber = await fetchReceptionNumber();
+      const verbalProcessWithLatestNumber = {
+        ...verbalProcess,
+        numar_ordine: latestReceptionNumber
+      };
+      await addVerbalProcess(verbalProcessWithLatestNumber);
 
       // increment reception number now that PDF was generated/sent and verbalProcess created
       await incrementReceptionNumber();
 
       // Prepare operations with extra context so we can record intrari_solutie (ieșiri)
-  console.log('receptionNumber (state):', receptionNumber, 'finalData.receptionNumber:', finalData.receptionNumber);
+  console.log('latestReceptionNumber (state):', latestReceptionNumber, 'finalData.receptionNumber:', finalData.receptionNumber);
       let opsToUpdate = [];
 
       // Primary source: finalData.operations (selected in the flow)
@@ -256,8 +262,8 @@ const SummaryAndSignatureStep = () => {
             quantity: qtyVal,
             beneficiar: finalData.customer?.name || null,
             lot: sol ? (sol.lot || null) : null,
-            // prefer the live receptionNumber state, fallback to finalData.receptionNumber
-            numar_ordine: receptionNumber || finalData.receptionNumber || null,
+            // prefer the latest receptionNumber
+            numar_ordine: latestReceptionNumber || finalData.receptionNumber || null,
             created_at: new Date().toISOString()
           };
         }).filter(op => op.solutionId !== null && op.solutionId !== undefined);
@@ -297,7 +303,7 @@ const SummaryAndSignatureStep = () => {
                 quantity: item.qty,
                 beneficiar: finalData.customer?.name || null,
                 lot: item.lot || null,
-                numar_ordine: receptionNumber || finalData.receptionNumber || null,
+                numar_ordine: latestReceptionNumber || finalData.receptionNumber || null,
                 created_at: new Date().toISOString()
               });
             } else {
@@ -333,7 +339,7 @@ const SummaryAndSignatureStep = () => {
               quantity: qty,
               beneficiar: finalData.customer?.name || null,
               lot: sol.lot || null,
-              numar_ordine: receptionNumber || finalData.receptionNumber || null,
+              numar_ordine: latestReceptionNumber || finalData.receptionNumber || null,
               created_at: new Date().toISOString()
             });
           }

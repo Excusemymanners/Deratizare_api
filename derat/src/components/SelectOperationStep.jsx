@@ -132,83 +132,8 @@ const SelectOperationStep = () => {
         }));
     };
 
-    const updateSolutionStock = async () => {
-        try {
-            for (const operation of selectedOperations) {
-                const operationSolutions = selectedSolutions[operation] || [];
-                
-                if (operationSolutions.length > 0) {
-                    const solution = operationSolutions[0];
-                    const job = customerJobs.find(job => job.value === operation && job.active);
-                    const quantityUsed = job ? job.surface * solution.quantity_per_sqm : 0;
-                    
-                    const remainingQuantity = solution.remaining_quantity || solution.total_quantity || 0;
-                    const minimumReserve = solution.minimum_reserve || 0;
-                    const availableQuantity = remainingQuantity - minimumReserve;
-                    
-                    // Verifică dacă există suficient stoc disponibil (peste rezerva minimă)
-                    if (availableQuantity < quantityUsed) {
-                        throw new Error(
-                            `Stoc insuficient pentru "${solution.name}". ` +
-                            `Necesită ${quantityUsed.toFixed(2)} ${solution.unit_of_measure}, ` +
-                            `dar sunt disponibile doar ${availableQuantity.toFixed(2)} ${solution.unit_of_measure}. ` +
-                            `(Rezerva minimă de ${minimumReserve.toFixed(2)} ${solution.unit_of_measure} trebuie păstrată)`
-                        );
-                    }
-
-                    const newRemainingQuantity = remainingQuantity - quantityUsed;
-                    const newTotalQuantity = solution.total_quantity - quantityUsed;
-                    
-                    // Verifică dacă noua cantitate rămasă va atinge rezerva minimă
-                    const shouldDeactivate = newRemainingQuantity <= minimumReserve;
-                    
-                    const updateData = {
-                        total_quantity: newTotalQuantity,
-                        remaining_quantity: newRemainingQuantity
-                    };
-                    
-                    // Dacă atinge rezerva minimă, dezactivează automat
-                    if (shouldDeactivate) {
-                        updateData.is_active = false;
-                    }
-
-                    const { error } = await supabase
-                        .from('solutions')
-                        .update(updateData)
-                        .eq('id', solution.value);
-
-                    if (error) {
-                        throw new Error(`Eroare la actualizarea stocului pentru "${solution.name}": ${error.message}`);
-                    }
-                    
-                    // Notifică utilizatorul dacă soluția a fost dezactivată
-                    if (shouldDeactivate) {
-                        console.warn(`⚠️ Soluția "${solution.name}" a fost dezactivată automat deoarece a atins rezerva minimă!`);
-                        alert(
-                            `⚠️ ATENȚIE: Soluția "${solution.name}" a atins rezerva minimă ` +
-                            `(${minimumReserve.toFixed(2)} ${solution.unit_of_measure}) ` +
-                            `și a fost dezactivată automat!`
-                        );
-                    }
-                }
-            }
-            
-            return true;
-        } catch (error) {
-            console.error('Error updating stock:', error);
-            setErrorMessage(error.message);
-            return false;
-        }
-    };
-
     const handleNext = async () => {
         try {
-            const stockUpdateSuccess = await updateSolutionStock();
-            
-            if (!stockUpdateSuccess) {
-                return;
-            }
-
             const newFormData = {
                 ...formData,
                 operations: selectedOperations,
