@@ -27,6 +27,7 @@ const AdminView = () => {
             <div className="admin-container">
                 <form onSubmit={handleLogin} className="auth-form">
                     <h2>Autentificare Admin</h2>
+                    <h3>Password: admin123</h3>
                     <div className="form-group">
                         <input
                             type="password"

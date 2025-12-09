@@ -21,7 +21,7 @@ const Header = ({ isAuthenticated, isAdmin, handleLogout, handleToggle }) => {
     return (
         <header className="header">
             <div className="header-content">
-                <h1>ElsiCom</h1>
+                <h1>Proto-derat</h1>
                 <div className="header-buttons">
                     {isAuthenticated && (
                         <>
